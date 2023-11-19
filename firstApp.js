@@ -1,32 +1,46 @@
 const http = require('http')
+const fs = require('fs')
 
 const server = http.createServer((req, res) => {
-    console.log(res)
 
-    if (req.url === "/home") {
+    console.log("SERVER RUNNING .....")
+    const url = req.url
+    const method = req.method
+
+
+    if (req.url === "/") {
         res.write('<html>')
-        res.write('<body><h1> Hello this is a home page </h1></body>')
+        const fileData = fs.readFileSync('message.txt')
+        res.write(`<body><h1>${fileData}</h1><form action ="/message" method="POST"><input name = "message" type="text"/> <button type ="submit">Send</button></form></body>`)
         res.write('</html>')
         return res.end()
     }
-    else if (req.url === "/about") {
-        res.write('<html>')
-        res.write('<body><h1> Welcome to ABout Page  </h1></body>')
-        res.write('</html>')
-        return res.end()
+
+    if (url === "/message" && method === "POST") {
+
+        const body = []
+
+        req.on("data", (chunk) => {
+            body.push(chunk)
+        })
+        return req.on('end', () => {
+            const parseBody = Buffer.concat(body).toString()
+            const message = parseBody.split("=")[1]
+            fs.writeFile('message.txt', message, (err) => {
+                res.statusCode = 302
+                res.setHeader('location', '/')
+                return res.end()
+            })
+
+        })
+
     }
-    else if (req.url === "/node") {
-        res.write('<html>')
-        res.write('<body><h1> Welcome to node js project  </h1></body>')
-        res.write('</html>')
-        return res.end()
-    }
-    else {
-        res.write('<html>')
-        res.write('<body><h1> Welcome to Home Page   </h1></body>')
-        res.write('</html>')
-        return res.end()
-    }
+
+
+    res.write('<html>')
+    res.write('<body><h1> Hello this is a Message  page </h1></body>')
+    res.write('</html>')
+    res.end()
 
 
 })
