@@ -10,7 +10,7 @@ const configureRoutes = (req, res) => {
 
     if (req.url === "/") {
         res.write('<html>')
-        const fileData = fs.readFileSync('message.txt')
+        const fileData = fs.readFileSync('message.txt', 'utf-8')
         res.write(`<body><h1>${fileData}</h1><form action ="/message" method="POST"><input name = "message" type="text"/> <button type ="submit">Send</button></form></body>`)
         res.write('</html>')
         return res.end()
@@ -27,9 +27,15 @@ const configureRoutes = (req, res) => {
             const parseBody = Buffer.concat(body).toString()
             const message = parseBody.split("=")[1]
             fs.writeFile('message.txt', message, (err) => {
-                res.statusCode = 302
-                res.setHeader('location', '/')
-                return res.end()
+                if (err) {
+                    console.log(err);
+                }
+                else {
+
+                    res.statusCode = 302
+                    res.setHeader('location', '/')
+                    return res.end()
+                }
             })
 
         })
